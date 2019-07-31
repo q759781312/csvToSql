@@ -8,10 +8,12 @@ public class DataHandlerTask implements Runnable {
 
     private Queue<String[]> lines;
     private String[] headers;
+    private String tableName;
 
-    public DataHandlerTask(Queue<String[]> lines, String[] headers) {
+    public DataHandlerTask(Queue<String[]> lines, String[] headers, String tableName) {
         this.lines = lines;
         this.headers = headers;
+        this.tableName = tableName;
     }
 
     public void run() {
@@ -19,7 +21,10 @@ public class DataHandlerTask implements Runnable {
             StringBuilder sqlStr = new StringBuilder();
             String[] contents = lines.poll();
             try {
-                sqlStr.append(" insert into demo (");
+                if(headers.length!=contents.length){
+                    throw new RuntimeException("标题与正文个数不符!");
+                }
+                sqlStr.append(" insert into ").append(tableName).append(" (");
                 for (String header : headers) {
                     sqlStr.append("`").append(header).append("`").append(",");
                 }
@@ -30,7 +35,6 @@ public class DataHandlerTask implements Runnable {
                 }
                 sqlStr = sqlStr.replace(sqlStr.length() - 1, sqlStr.length(), "");
                 sqlStr.append(");");
-                int i=1/0;
                 System.out.println(sqlStr.toString());
             } catch (Exception e) {
                 ErrorDataUtil.getInstance().addErrData(contents);
